@@ -1,0 +1,61 @@
+Holt-Winters Forecasting App
+========================================================
+author: Danielle Boucher
+date: Apr 30 2017
+autosize: true
+font-import: https://fonts.googleapis.com/css?family=Raleway
+font-family: 'Raleway'
+
+Introduction to Holt-Winters Forecasting
+========================================================
+
+Holt-Winters is a triple exponential smoothing model that is particularly useful when forecasting time series data with seasonal patterns. There are three key model parameters:
+  
+  1. **Alpha:** Smoothing Factor
+  2. **Beta:** Trend Factor
+  3. **Gamma:** Seasonal Smoothing Factor
+
+You can learn more about Holt-Winters forecasting and it's usefulness to seasonal profiles here:
+  
+  https://stat.ethz.ch/R-manual/R-devel/library/stats/html/HoltWinters.html 
+
+Generating a Holt-Winters Model in R
+========================================================
+
+```{r, echo=FALSE}
+library(forecast)
+weeklydata <- read.csv("Ontariotest.csv")
+weeklydata <- weeklydata[,c(1,3)]
+weeklydata[is.na(weeklydata)] <- 0
+      #Scrub an LTO
+      weeklydata[50:53,2] <- weeklydata[50:53,2]-300
+      weeklydata[51,2] <- weeklydata[51,2]-150
+      testing = weeklydata[grep("2017", weeklydata$Week),]
+      training = weeklydata[-grep("2017", weeklydata$Week),]
+```
+
+We can use the HoltWinters() command on time series data to generate a fitted model. 
+
+```{r}
+weeklytrend <- ts(training$Sales, start = c(2014, 1), frequency = 52)
+hw <- HoltWinters(weeklytrend)
+head(hw$fitted,2)
+```
+
+Forecasting with Holt-Winters
+========================================================
+
+Once we have fitted a Holt-Winters model, we can use the "forecast" package to extend our predictions out "h" number of time periods. 
+
+```{r}
+forecast1 <- forecast(hw, level = 90, h=52)
+plot(forecast1, ylab="Volume", xlab="Year", main="Holt-Winters Forecast")
+```
+
+
+Interactive Parameter Selection with our Web App
+========================================================
+
+In our above example, we did not specify the **alpha, beta, and gamma** for the Holt-Winters model - we let the model select the optimized values. However, we do not always want to use the mathematically optimized values, as the output may not be realistic. Our web app allows you to select the model parameters in real time using sliders, and see the results on your data. 
+  
+  Check it out here! https://dboucher.shinyapps.io/holtwintersforecast/ 
